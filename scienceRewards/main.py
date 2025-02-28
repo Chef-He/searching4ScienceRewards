@@ -6,7 +6,7 @@ from getContent import getContent
 from toExcel import toexcel
 # 配置参数
 urls = [
-    'https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html'
+    "https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html"
 ]
 
 headers = {
@@ -44,8 +44,8 @@ def search(url):
                 # 执行内容处理操作
                 datas = getContent(full_url)
 
-                toexcel(datas, 'scienceRewards.xlsx')
-                # 添加请求间隔
+                if datas:
+                    toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
                 sleep(1)
 
     except requests.exceptions.RequestException as e:

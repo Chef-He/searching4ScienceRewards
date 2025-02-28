@@ -1,12 +1,13 @@
 import re
-import io
 import os
 import tempfile
-import pdfplumber
+import pythoncom
 import chardet
+from time import sleep
 from win32com import client
 from docx import Document
 from typing import List, Dict, Tuple
+from pdf2docx import parse
 import requests
 
 headers = {
@@ -17,47 +18,37 @@ def detect_encoding(content: bytes) -> str:
     result = chardet.detect(content)
     return result['encoding'] or 'gb18030'
 
-# PDF表格处理增强
-def parse_pdf(content: bytes) -> Tuple[str, List[List[List[str]]]]:
-    """解析PDF文档,返回(文本内容,表格列表)"""
-    full_text = []
-    all_tables = []
-    
-    with pdfplumber.open(io.BytesIO(content)) as pdf:
-        for page in pdf.pages:
-            # 提取页面文本(带布局信息)
-            text = page.extract_text(x_tolerance=3, y_tolerance=3)
-            full_text.append(text)
+
+def pdf_to_docx(pdf_content: bytes) -> bytes:
+    tmp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    tmp_docx = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    print(f"正在转换 {os.path.basename(tmp_pdf.name)}...")
+    try:
+        # 写入临时PDF文件
+        tmp_pdf.write(pdf_content)
+        tmp_pdf.close()
+        parse(tmp_pdf.name, tmp_docx.name)
+        path = tmp_docx.name
+        tmp_docx.close()
+        # 读取转换结果
+        with open(path, 'rb') as f:
+            return f.read()
             
-            # 提取本页所有表格
-            tables = page.extract_tables({
-                "vertical_strategy": "lines",
-                "horizontal_strategy": "lines",
-                "explicit_vertical_lines": page.curves + page.edges,
-                "snap_tolerance": 5
-            })
-            all_tables.extend(tables)
-    
-    return "\n".join(full_text), all_tables
+    finally:
+        pythoncom.CoUninitialize()
+        os.remove(tmp_pdf.name)
+        os.remove(tmp_docx.name)
+
+def doc_to_docx(doc_content: bytes) -> bytes:
+
 
 def parse_word(content: bytes) -> tuple[str, list]:
-    """Windows专用.doc/.docx解析函数"""
     # 创建临时文件
-    with tempfile.NamedTemporaryFile(suffix='.doc', delete=False) as tmp_file:
+    with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as tmp_file:
         tmp_file.write(content)
-        doc_path = tmp_file.name
     
     try:
-        # 转换为docx
-        word = client.Dispatch("Word.Application")
-        doc = word.Documents.Open(doc_path)
-        docx_path = doc_path + "x"
-        doc.SaveAs(docx_path, FileFormat=16)  # 16=docx格式
-        doc.Close()
-        word.Quit()
-
-        # 解析docx内容
-        doc = Document(docx_path)
+        doc = Document(tmp_file.name)
         text = "\n".join(p.text for p in doc.paragraphs)
         tables = [
             [
@@ -69,13 +60,8 @@ def parse_word(content: bytes) -> tuple[str, list]:
         
         return text, tables
 
-    finally:
-        # 清理临时文件
-        os.remove(doc_path)
-        if os.path.exists(docx_path):
-            os.remove(docx_path)
-
-import re
+    except:
+        pass
 
 def extract_award_type(text: str) -> str:
     """
@@ -218,10 +204,42 @@ def getContent(content_url: str) -> List[Dict[str, str]]:
 
         # PDF处理分支
         if content_url.lower().endswith('.pdf'):
+            try:
+                print("检测到pdf, 开始转换")
+                content = pdf_to_docx(content)
+                print("成功将pdf转为docx文档")
+                try:
+                    text, tables = parse_word(content)
+                    if tables:
+                        print(f"发现 {len(tables)} 个表格")
+                        results = process_tables(text, tables)
+                    else:
+                        print("无表格文档（暂不处理）")
+                        return []
+                except RuntimeError as e:
+                    print(f"处理pdf文档时发生错误: {str(e)}")
+            except Exception as e:
+                print(f"失败:{str(e)}")
             
-        
-        # Word处理分支
-        elif content_url.lower().endswith(('.doc', '.docx')):
+        elif content_url.lower().endswith(('.doc')):
+            try:
+                print("检测到doc, 开始转换")
+                content = doc_to_docx(content)
+                print("成功将doc转为docx文档")
+                try:
+                    text, tables = parse_word(content)
+                    if tables:
+                        print(f"发现 {len(tables)} 个表格")
+                        results = process_tables(text, tables)
+                    else:
+                        print("无表格文档（暂不处理）")
+                        return []
+                except RuntimeError as e:
+                    print(f"处理doc文档时发生错误: {str(e)}")
+            except Exception as e:
+                print(f"失败:{str(e)}")
+
+        elif content_url.lower().endswith(('.docx')):
             try:
                 text, tables = parse_word(content)
                 if tables:

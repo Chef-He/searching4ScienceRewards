@@ -6,6 +6,7 @@ from typing import List, Dict
 def toexcel(datas: List[Dict], file: str):
     """将数据写入 Excel 文件"""
     # 检查文件是否存在
+    items = 0
     file_exists = os.path.exists(file)
 
     # 创建一个工作簿
@@ -34,6 +35,7 @@ def toexcel(datas: List[Dict], file: str):
                 data.get("project", ""),    # 项目
                 data.get("unit", "")       # 所属单位
             ])
+            items += 1
 
         # 保存文件
         column_widths = {
@@ -46,7 +48,7 @@ def toexcel(datas: List[Dict], file: str):
             ws.column_dimensions[column].width = width
 
         wb.save(file)
-        print(f"数据已写入至 {file}")
+        print(f"{items}条数据已写入至 {file}")
     except Exception as e:
         print(f"写入数据时发生错误: {str(e)}")
     finally:
