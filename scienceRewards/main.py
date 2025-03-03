@@ -7,10 +7,10 @@ from curl_cffi import requests
 from getContent import getContent
 from toExcel import toexcel
 
-    #"https://sjt.zj.gov.cn/art/2024/12/18/art_1229563385_2539417.html",
     #"https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html",
+    #"https://www.nmg.gov.cn/zwgk/zfgb/2017n_4768/201724/201711/t20171124_303996.html"
 urls = [
-    "https://www.nmg.gov.cn/zwgk/zfgb/2017n_4768/201724/201711/t20171124_303996.html"
+    "https://sjt.zj.gov.cn/art/2024/12/18/art_1229563385_2539417.html",
 ]
 
 headers = {
@@ -46,7 +46,7 @@ def search(url):
                 full_url = urljoin(url, raw_href)
                 
                 # 执行内容处理操作
-                datas = getContent(full_url)
+                datas = getContent(full_url, "")
 
                 if datas:
                     toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
@@ -57,9 +57,9 @@ def search(url):
 
     except Exception as e:
         print(f"处理 {url} 时发生意外错误: {str(e)}")
-
+        
 if __name__ == "__main__":
-    print("Start!")
+    print("开始运行!")
     for url in urls:
         search(url)
-    print("Done!")
+    print("结束!")

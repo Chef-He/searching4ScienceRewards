@@ -19,7 +19,7 @@ def toexcel(datas: List[Dict], file: str):
         wb = openpyxl.Workbook()
         ws = wb.active
         # 写入表头
-        ws.append(["省份", "年份", "奖励", "获奖人", "项目", "所属单位"])  
+        ws.append(["省份", "年份", "项目", "获奖人员", "奖励类型", "奖励级别"])  
         for col in ['A', 'B', 'C', 'D', 'E', 'F']:
             cell = ws[f"{col}1"]
             cell.alignment = Alignment(horizontal='center')
@@ -28,20 +28,19 @@ def toexcel(datas: List[Dict], file: str):
     try:
         for data in datas:
             ws.append([
-                data.get("province", ""),  # 省份
-                data.get("year", ""),      # 年份
-                data.get("award_type", ""),# 奖励
-                data.get("name", ""),      # 获奖人
-                data.get("project", ""),    # 项目
-                data.get("unit", "")       # 所属单位
+                data.get("province", ""),  
+                data.get("year", ""),      
+                data.get("project", ""),    
+                data.get("name_unit", ""),    
+                data.get("award_type", ""),
+                data.get("award_level", "")
             ])
             items += 1
 
         # 保存文件
         column_widths = {
-        'D': 150,  # 获奖人
-        'E': 50,  # 项目
-        'F': 150 # 所属单位
+        'D': 200,  # 获奖人
+        'C': 50,  # 项目
     }
     
         for column, width in column_widths.items():
