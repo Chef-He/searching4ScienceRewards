@@ -61,7 +61,6 @@ class OpenAIProcessor:
             
             # 提取响应内容
             result = response.choices[0].message.content
-            print(result)
             # 解析JSON
             try:
                 # 尝试直接解析为JSON对象

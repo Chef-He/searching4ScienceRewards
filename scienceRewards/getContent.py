@@ -2,7 +2,6 @@ from typing import List, Dict
 from curl_cffi import requests
 
 from fileConvert import doc_to_docx, pdf_to_docx, parse_docx
-from LLMProcesser import OpenAIProcessor
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
@@ -10,7 +9,7 @@ headers = {
 
 def getContent(content_url: str) -> List[Dict[str, str]]:
    
-    results = []
+    text = ""
     try:
         response = requests.get(content_url, headers=headers, timeout=15)
         response.raise_for_status()
@@ -48,19 +47,11 @@ def getContent(content_url: str) -> List[Dict[str, str]]:
         
         else:
             print("不支持的文件类型")
-            return results  # 返回空列表
+            return text  # 返回空列表
         
-        if text:
-            try:
-                agent = OpenAIProcessor()
-                results = agent.extract_award_info(text)
-            except Exception as e:
-                print(f"唤起大模型失败: {e}")
-        else:
-            print("没有从文件中接受到文本")
-
+        
     except Exception as e:
         print(f"处理失败: {str(e)}")
     
     finally:
-        return results  # 确保始终返回列表
+        return text # 确保始终返回列表

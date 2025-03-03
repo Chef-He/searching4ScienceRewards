@@ -6,11 +6,13 @@ from curl_cffi import requests
 
 from getContent import getContent
 from toExcel import toexcel
+from LLMProcesser import*
 
     #"https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html",
+    #"https://sjt.zj.gov.cn/art/2024/12/18/art_1229563385_2539417.html",
     #"https://www.nmg.gov.cn/zwgk/zfgb/2017n_4768/201724/201711/t20171124_303996.html"
+
 urls = [
-    "https://sjt.zj.gov.cn/art/2024/12/18/art_1229563385_2539417.html",
 ]
 
 headers = {
@@ -21,9 +23,7 @@ headers = {
 TARGET_KEYWORDS = ["名单", "获奖", "科学技术奖", "附件"]  # 根据需求自行修改
 
 def search(url):
-    """
-    :param url: 当前处理的页面URL
-    """
+    datas = []
     try:
         response = requests.get(url, headers=headers, timeout=10) 
         response.raise_for_status()
@@ -31,35 +31,38 @@ def search(url):
         print(f"\n正在分析页面: {url}")
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # 查找所有<a>标签
         for link in soup.find_all('a'):
-            # 获取链接显示文本（去除首尾空白）
             link_text = link.get_text(strip=True)
-            # 获取原始href属性
             raw_href = link.get('href', '')
 
-            # 检查链接文本是否包含任意目标关键词
             if any(keyword in link_text for keyword in TARGET_KEYWORDS):
                 print(f"发现目标链接: [{link_text}] -> {raw_href}")
-                
-                # 构建完整URL（处理相对路径）
                 full_url = urljoin(url, raw_href)
-                
-                # 执行内容处理操作
-                datas = getContent(full_url, "")
+                datas = getContent(full_url)
 
-                if datas:
-                    toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
-                sleep(1)
+        return datas
+                
 
     except requests.exceptions.RequestException as e:
         print(f"请求 {url} 时发生错误: {str(e)}")
 
     except Exception as e:
         print(f"处理 {url} 时发生意外错误: {str(e)}")
-        
+
 if __name__ == "__main__":
     print("开始运行!")
+    try:
+        agent = OpenAIProcessor()
+    except Exception as e:
+        print(f"DeepSeek初始化失败!{e}")
+        exit()
+    print("DeepSeek准备完成!")
     for url in urls:
-        search(url)
+        text = search(url)
+        if text:
+            print("开始利用DeepSeek提取信息...")
+            datas = agent.extract_award_info(text)
+            print("开始将此次内容写入表格...")
+            toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
+            sleep(1)
     print("结束!")

@@ -39,8 +39,9 @@ def toexcel(datas: List[Dict], file: str):
 
         # 保存文件
         column_widths = {
-        'D': 200,  # 获奖人
-        'C': 50,  # 项目
+        'D': 75,
+        'C': 50, 
+        'E': 25
     }
     
         for column, width in column_widths.items():
