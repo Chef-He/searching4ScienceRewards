@@ -20,14 +20,13 @@ headers = {
 }
 
 # 定义要匹配的关键词列表
-TARGET_KEYWORDS = ["名单", "获奖", "科学技术奖", "附件"]  # 根据需求自行修改
+TARGET_KEYWORDS = ["名单", "获奖", "科学技术奖", "附件", "目录"]  # 根据需求自行修改
 
 def search(url):
     datas = []
     try:
         response = requests.get(url, headers=headers, timeout=10) 
         response.raise_for_status()
-
         print(f"\n正在分析页面: {url}")
         soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -39,17 +38,16 @@ def search(url):
                 print(f"发现目标链接: [{link_text}] -> {raw_href}")
                 full_url = urljoin(url, raw_href)
                 datas = getContent(full_url)
-
+        
         return datas
                 
-
     except requests.exceptions.RequestException as e:
         print(f"请求 {url} 时发生错误: {str(e)}")
 
     except Exception as e:
         print(f"处理 {url} 时发生意外错误: {str(e)}")
 
-if __name__ == "__main__":
+def main():
     print("开始运行!")
     try:
         agent = OpenAIProcessor()
@@ -64,5 +62,9 @@ if __name__ == "__main__":
             datas = agent.extract_award_info(text)
             print("开始将此次内容写入表格...")
             toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
-            sleep(1)
+        else:
+            print(f"未从{url}中提取出任何信息, 请人工核实该网站")
     print("结束!")
+
+if __name__ == "__main__":
+    main()

@@ -49,6 +49,7 @@ def toexcel(datas: List[Dict], file: str):
 
         wb.save(file)
         print(f"{items}条数据已写入至 {file}")
+        
     except Exception as e:
         print(f"写入数据时发生错误: {str(e)}")
     finally:
