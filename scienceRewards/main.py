@@ -5,8 +5,10 @@ from time import sleep
 from getContent import getContent
 from toExcel import toexcel
 # 配置参数
+    #"https://sjt.zj.gov.cn/art/2024/12/18/art_1229563385_2539417.html",
 urls = [
-    "https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html"
+    "https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html",
+    "https://www.nmg.gov.cn/zwgk/zfgb/2017n_4768/201724/201711/t20171124_303996.html"
 ]
 
 headers = {
