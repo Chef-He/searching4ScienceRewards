@@ -2,12 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from time import sleep
+from curl_cffi import requests
+
 from getContent import getContent
 from toExcel import toexcel
-# 配置参数
+
     #"https://sjt.zj.gov.cn/art/2024/12/18/art_1229563385_2539417.html",
+    #"https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html",
 urls = [
-    "https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html",
     "https://www.nmg.gov.cn/zwgk/zfgb/2017n_4768/201724/201711/t20171124_303996.html"
 ]
 
@@ -23,7 +25,7 @@ def search(url):
     :param url: 当前处理的页面URL
     """
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10) 
         response.raise_for_status()
 
         print(f"\n正在分析页面: {url}")

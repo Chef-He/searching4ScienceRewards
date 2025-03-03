@@ -10,7 +10,7 @@ from win32com import client as wc
 from docx import Document
 from typing import List, Dict, Tuple
 from pdf2docx import parse
-import requests
+from curl_cffi import requests
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
@@ -54,21 +54,17 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
         tmp_doc_path = os.path.join(temp_dir, f"temp_{unique_id}.doc")
         tmp_docx_path = os.path.join(temp_dir, f"temp_{unique_id}.docx")
 
-        # ====================== 写入临时文件 ======================
         with open(tmp_doc_path, "wb") as f:
             f.write(doc_bytes)
 
-        # ====================== 初始化Word应用 ======================
         word = wc.DispatchEx("Word.Application")  # 创建独立进程
         word.Visible = False  # 关键！隐藏Word界面
         word.DisplayAlerts = False  # 禁用所有弹窗
         word.AutomationSecurity = 1  # 禁用宏执行
 
-        # ====================== 文件转换操作 ======================
         max_retries = 2
         for attempt in range(max_retries + 1):
             try:
-                # 尝试打开文档（只读模式避免锁问题）
                 doc = word.Documents.Open(
                     FileName=tmp_doc_path,
                     ReadOnly=True,
@@ -91,8 +87,6 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
                 kill_word_processes()
                 time.sleep(1)
 
-        # ====================== 读取转换结果 ======================
-        # 确保文件写入完成
         time.sleep(0.5)
         if not os.path.exists(tmp_docx_path):
             raise FileNotFoundError("生成的docx文件不存在")
@@ -105,7 +99,6 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
         return None
 
     finally:
-        # ====================== 资源清理 ======================
         try:
             if doc:
                 doc.Close(SaveChanges=0)
