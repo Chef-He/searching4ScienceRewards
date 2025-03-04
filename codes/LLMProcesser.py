@@ -15,15 +15,15 @@ class OpenAIProcessor:
         """
 
         # 构建用户提示
-        user_prompt = f"""请从以下文本中提取所有科学技术奖项信息。
+        user_prompt = f"""请从以下文本中提取所有奖项信息。
 
 对于每个奖项，提取以下信息, 若有多个：
 1. 奖励省份 (province)
 2. 奖励年份 (year)
 3. 项目名称 (project)
 4. 获奖人姓名+所属单位(特别注意不是提名单位) (name_unit) (若有多个获奖人, 中间用空格隔开)
-5. 奖项类型，如自然科学奖、科技进步奖等 (award_type)
-6. 奖项级别, 如一等奖(award_level)
+5. 奖项类型，如自然科学奖, 技术发明奖, 科技进步奖等 (award_type)
+6. 奖项级别, 如一等奖, 二等奖, 三等奖(award_level)
 
 """
         
@@ -42,7 +42,7 @@ class OpenAIProcessor:
 
 如果文本中包含表格数据，请特别注意从表格中提取完整准确的信息。
 只返回JSON数组，不要包含其他文本。
-
+需要注意的是, 可能会有这样的情况:在输入的文本中, 先列出所有表格对应的奖励种类等再依次给出表格, 你需要尽可能将它们匹配,给出正确的答案.
 以下是需要分析的文本：
 {text}"""
 
@@ -56,17 +56,17 @@ class OpenAIProcessor:
                 ],
                 temperature=1.0,  # 低温度以获得更稳定的输出
                 response_format={"type": "json_object"},  # 请求JSON格式返回
-                max_tokens=4000
+                max_tokens=8000
             )
             
             # 提取响应内容
             result = response.choices[0].message.content
-            # 解析JSON
+            with open("result.txt", "w") as f:
+                f.write(result)
+            
             try:
-                # 尝试直接解析为JSON对象
                 parsed_data = json.loads(result)
                 
-                # 检查是否有data或awards等外层键
                 if isinstance(parsed_data, dict):
                     for key in ["data", "awards", "results", "items"]:
                         if key in parsed_data and isinstance(parsed_data[key], list):
@@ -81,7 +81,7 @@ class OpenAIProcessor:
                 if isinstance(parsed_data, list):
                     return parsed_data
                 
-                print("无法从响应中提取数据列表")
+                print("无法从大模型的回复中提取数据列表")
                 return []
                 
             except json.JSONDecodeError as e:

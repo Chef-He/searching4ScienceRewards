@@ -36,7 +36,6 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
         unique_id = uuid.uuid4().hex
         temp_dir = tempfile.gettempdir()
         
-        # 临时文件路径（确保唯一性）
         tmp_doc_path = os.path.join(temp_dir, f"temp_{unique_id}.doc")
         tmp_docx_path = os.path.join(temp_dir, f"temp_{unique_id}.docx")
 
@@ -44,9 +43,9 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
             f.write(doc_bytes)
 
         word = wc.DispatchEx("Word.Application")  # 创建独立进程
-        word.Visible = False  # 关键！隐藏Word界面
-        word.DisplayAlerts = False  # 禁用所有弹窗
-        word.AutomationSecurity = 1  # 禁用宏执行
+        word.Visible = False  
+        word.DisplayAlerts = False  
+        word.AutomationSecurity = 1  
 
         max_retries = 2
         for attempt in range(max_retries + 1):
@@ -61,7 +60,7 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
                 # 执行转换保存
                 doc.SaveAs(
                     FileName=tmp_docx_path,
-                    FileFormat=16,  # wdFormatDocumentDefault=16 (docx格式)
+                    FileFormat=16,
                 )
                 break  # 成功则退出重试循环
 
@@ -83,7 +82,6 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
     except Exception as e:
         print(f"转换失败: {str(e)}")
         return None
-
     finally:
         try:
             if doc:
@@ -138,19 +136,21 @@ def parse_docx(file_bytes: bytes) -> str:
     for para in doc.paragraphs:
         if para.text.strip():
             full_text.append(para.text)
-    
     for table in doc.tables:
         table_text = []
+        print(f"this table got {len(table.rows)} rows")
         for row in table.rows:
             row_text = []
             for cell in row.cells:
-                cell_text = ' '.join([p.text for p in cell.paragraphs if p.text.strip()])
+                cell_text = cell.text.strip().replace('\n', ' ')
                 if cell_text:
                     row_text.append(cell_text)
             if row_text:
                 table_text.append(' | '.join(row_text))
-        
+
         if table_text:
             full_text.append('\n表格内容:\n' + '\n'.join(table_text))
-    
-    return '\n\n'.join(full_text)
+    result = '\n\n'.join(full_text)
+   # with open("1.txt", "w") as f:
+    #    f.write(result)
+    return result

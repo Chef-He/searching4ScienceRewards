@@ -8,19 +8,18 @@ from getContent import getContent
 from toExcel import toexcel
 from LLMProcesser import*
 
-    #"https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html",
     #"https://sjt.zj.gov.cn/art/2024/12/18/art_1229563385_2539417.html",
     #"https://www.nmg.gov.cn/zwgk/zfgb/2017n_4768/201724/201711/t20171124_303996.html"
 
 urls = [
+    "https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html"
 ]
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
 }
 
-# 定义要匹配的关键词列表
-TARGET_KEYWORDS = ["名单", "获奖", "科学技术奖", "附件", "目录"]  # 根据需求自行修改
+TARGET_KEYWORDS = ["名单", "获奖", "科学技术奖", "附件", "目录"] 
 
 def search(url):
     datas = []
@@ -47,6 +46,10 @@ def search(url):
     except Exception as e:
         print(f"处理 {url} 时发生意外错误: {str(e)}")
 
+def needCheck(url):
+    with open("M:\\MyLib\\000-temp\\url_to_check.txt", "a") as f:
+        f.write(url + ' ')
+
 def main():
     print("开始运行!")
     try:
@@ -60,10 +63,16 @@ def main():
         if text:
             print("开始利用DeepSeek提取信息...")
             datas = agent.extract_award_info(text)
-            print("开始将此次内容写入表格...")
-            toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
+            if datas:
+                toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
+                print("开始将此次内容写入表格...")
+            else:
+                print(f"LLM未返回任何值, 需要再次核实的url:{url}")
+                needCheck(url)
         else:
             print(f"未从{url}中提取出任何信息, 请人工核实该网站")
+            needCheck(url)
+
     print("结束!")
 
 if __name__ == "__main__":

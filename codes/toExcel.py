@@ -12,7 +12,7 @@ def toexcel(datas: List[Dict], file: str):
     # 创建一个工作簿
     if file_exists:
         # 如果文件存在，加载工作簿
-        wb = openpyxl.load_workbook(file)
+        wb = openpyxl.load_workbook(file, read_only=False)
         ws = wb.active
     else:
         # 如果文件不存在，创建一个新的工作簿和表头
