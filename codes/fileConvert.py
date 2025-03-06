@@ -138,7 +138,6 @@ def parse_docx(file_bytes: bytes) -> str:
             full_text.append(para.text)
     for table in doc.tables:
         table_text = []
-        print(f"this table got {len(table.rows)} rows")
         for row in table.rows:
             row_text = []
             for cell in row.cells:

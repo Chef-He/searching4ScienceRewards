@@ -4,8 +4,8 @@ import openai
 class OpenAIProcessor:
     def __init__(self):
         """初始化OpenAI API处理器"""
-        openai.api_key = "sk-544e85b623f145878bf85c38362e8804"
-        openai.api_base = "https://api.deepseek.com/v1"
+        openai.api_key = " sk-GXvHTdtNaBWUeuWcPBKxEo3tyBTfcbdKAq0gRVIzdfp6DDG4"
+        openai.api_base = "https://api.chatanywhere.tech/v1"
 
     def extract_award_info(self, text):
         system_prompt = """
@@ -22,7 +22,7 @@ class OpenAIProcessor:
 2. 奖励年份 (year)
 3. 项目名称 (project)
 4. 获奖人姓名+所属单位(特别注意不是提名单位) (name_unit) (若有多个获奖人, 中间用空格隔开)
-5. 奖项类型，如自然科学奖, 技术发明奖, 科技进步奖等 (award_type)
+5. 奖项类型，如自然科学奖, 技术发明奖, 科技进步奖等所有以奖结尾且不是奖励级别的条目 (award_type)
 6. 奖项级别, 如一等奖, 二等奖, 三等奖(award_level)
 
 """
@@ -43,20 +43,22 @@ class OpenAIProcessor:
 如果文本中包含表格数据，请特别注意从表格中提取完整准确的信息。
 只返回JSON数组，不要包含其他文本。
 需要注意的是, 可能会有这样的情况:在输入的文本中, 先列出所有表格对应的奖励种类等再依次给出表格, 你需要尽可能将它们匹配,给出正确的答案.
+另外, 若有无法确定的奖项类别等, 只要能确定获奖人的姓名, 你都需要将其输出, 其他部分默认输出为"待定"
+最后, 虽然文本非常长, 你仍需要提取每一个奖项的对应信息, 即使这可能会花费很长时间.
 以下是需要分析的文本：
 {text}"""
 
         try:
             # 调用OpenAI API
             response = openai.ChatCompletion.create(
-                model="deepseek-chat",  # 或其他适合的模型
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                temperature=1.0,  # 低温度以获得更稳定的输出
-                response_format={"type": "json_object"},  # 请求JSON格式返回
-                max_tokens=8000
+                temperature=1.0,  
+                response_format={"type": "json_object"},  
+                max_tokens=16384
             )
             
             # 提取响应内容
@@ -66,7 +68,6 @@ class OpenAIProcessor:
             
             try:
                 parsed_data = json.loads(result)
-                
                 if isinstance(parsed_data, dict):
                     for key in ["data", "awards", "results", "items"]:
                         if key in parsed_data and isinstance(parsed_data[key], list):
@@ -76,7 +77,6 @@ class OpenAIProcessor:
                     for value in parsed_data.values():
                         if isinstance(value, list):
                             return value
-                
                 # 如果是列表，直接返回
                 if isinstance(parsed_data, list):
                     return parsed_data

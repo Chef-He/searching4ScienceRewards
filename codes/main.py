@@ -55,17 +55,21 @@ def main():
     try:
         agent = OpenAIProcessor()
     except Exception as e:
-        print(f"DeepSeek初始化失败!{e}")
+        print(f"LLM初始化失败!{e}")
         exit()
-    print("DeepSeek准备完成!")
+    print("LLM准备完成!")
     for url in urls:
         text = search(url)
         if text:
-            print("开始利用DeepSeek提取信息...")
+            print("开始利用LLM提取信息...")
             datas = agent.extract_award_info(text)
             if datas:
-                toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
-                print("开始将此次内容写入表格...")
+                try:
+                    print("开始将此次内容写入表格...")
+                    toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
+                except:
+                    print("写入失败!")
+                    needCheck(url)
             else:
                 print(f"LLM未返回任何值, 需要再次核实的url:{url}")
                 needCheck(url)
