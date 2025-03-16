@@ -19,12 +19,6 @@ def kill_word_processes():
             pass
 
 def doc_to_docx(doc_bytes: bytes) -> bytes | None:
-    """
-    将 .doc 文件的字节流转换为 .docx 字节流
-    返回: 
-        - 成功: docx_bytes 
-        - 失败: None
-    """
     pythoncom.CoInitialize()
     tmp_doc_path = ""
     tmp_docx_path = ""
@@ -32,7 +26,6 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
     doc = None
 
     try:
-        # ====================== 生成唯一文件名 ======================
         unique_id = uuid.uuid4().hex
         temp_dir = tempfile.gettempdir()
         
@@ -42,7 +35,7 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
         with open(tmp_doc_path, "wb") as f:
             f.write(doc_bytes)
 
-        word = wc.DispatchEx("Word.Application")  # 创建独立进程
+        word = wc.DispatchEx("Word.Application")  
         word.Visible = False  
         word.DisplayAlerts = False  
         word.AutomationSecurity = 1  
@@ -98,7 +91,6 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
         kill_word_processes()
         pythoncom.CoUninitialize()
 
-        # 强制删除临时文件（带重试机制）
         for path in [tmp_doc_path, tmp_docx_path]:
             if not path or not os.path.exists(path):
                 continue

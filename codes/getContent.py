@@ -47,11 +47,11 @@ def getContent(content_url: str) -> List[Dict[str, str]]:
         
         else:
             print("不支持的文件类型")
-            return text  # 返回空列表
+            return text  
         
         
     except Exception as e:
         print(f"处理失败: {str(e)}")
     
     finally:
-        return text # 确保始终返回列表
+        return text 

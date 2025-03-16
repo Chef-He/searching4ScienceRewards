@@ -7,13 +7,11 @@ from curl_cffi import requests
 from getContent import getContent
 from toExcel import toexcel
 from LLMProcesser import*
+from getSuburl import *
 
-    #"https://sjt.zj.gov.cn/art/2024/12/18/art_1229563385_2539417.html",
-    #"https://www.nmg.gov.cn/zwgk/zfgb/2017n_4768/201724/201711/t20171124_303996.html"
-
-urls = [
-    "https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html"
-]
+baseUrls = {
+    
+}
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
@@ -52,32 +50,41 @@ def needCheck(url):
 
 def main():
     print("开始运行!")
-    try:
-        agent = OpenAIProcessor()
-    except Exception as e:
-        print(f"LLM初始化失败!{e}")
-        exit()
-    print("LLM准备完成!")
-    for url in urls:
-        text = search(url)
-        if text:
-            print("开始利用LLM提取信息...")
-            datas = agent.extract_award_info(text)
-            if datas:
-                try:
-                    print("开始将此次内容写入表格...")
-                    toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
-                except:
-                    print("写入失败!")
+    for baseUrl in baseUrls:
+        try:
+            urls =  getUrls(baseUrl)
+            try:
+                agent = OpenAIProcessor()
+            except Exception as e:
+                print(f"LLM初始化失败!{e}")
+                exit()
+            print("LLM准备完成!")
+            for url in urls:
+                text = search(url)
+                if text:
+                    print("开始利用LLM提取信息...")
+                    datas = agent.extract_award_info(text)
+                    if datas:
+                        try:
+                            print("开始将此次内容写入表格...")
+                            toexcel(datas, 'M:\\MyLib\\000-Temp\\scienceRewards.xlsx')
+                        except:
+                            print("写入失败!")
+                            needCheck(url)
+                    else:
+                        print(f"LLM未返回任何值, 需要再次核实的url:{url}")
+                        needCheck(url)
+                else:
+                    print(f"未从{url}中提取出任何信息, 请人工核实该网站")
                     needCheck(url)
-            else:
-                print(f"LLM未返回任何值, 需要再次核实的url:{url}")
-                needCheck(url)
-        else:
-            print(f"未从{url}中提取出任何信息, 请人工核实该网站")
-            needCheck(url)
-
+        except:
+            continue
     print("结束!")
 
+def main_url():
+    print("开始运行!")
+    urls =  getUrls(baseUrls[0])
+
+
 if __name__ == "__main__":
-    main()
+    main_url()

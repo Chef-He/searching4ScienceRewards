@@ -3,7 +3,6 @@ import openai
 
 class OpenAIProcessor:
     def __init__(self):
-        """初始化OpenAI API处理器"""
         openai.api_key = " sk-GXvHTdtNaBWUeuWcPBKxEo3tyBTfcbdKAq0gRVIzdfp6DDG4"
         openai.api_base = "https://api.chatanywhere.tech/v1"
 
@@ -15,15 +14,14 @@ class OpenAIProcessor:
         """
 
         # 构建用户提示
-        user_prompt = f"""请从以下文本中提取所有奖项信息。
-
-对于每个奖项，提取以下信息, 若有多个：
-1. 奖励省份 (province)
-2. 奖励年份 (year)
-3. 项目名称 (project)
-4. 获奖人姓名+所属单位(特别注意不是提名单位) (name_unit) (若有多个获奖人, 中间用空格隔开)
-5. 奖项类型，如自然科学奖, 技术发明奖, 科技进步奖等所有以奖结尾且不是奖励级别的条目 (award_type)
-6. 奖项级别, 如一等奖, 二等奖, 三等奖(award_level)
+        user_prompt = f"""请从以下文本中对所有奖项进行处理。
+        对于每个奖项，提取以下信息：
+        1. 奖励省份 (province)
+        2. 奖励年份 (year)
+        3. 项目名称 (project)
+        4. 获奖人姓名+所属单位(特别注意不是提名单位) (name_unit) (若有多个获奖人, 中间用空格隔开)
+        5. 奖项类型，如自然科学奖, 技术发明奖, 科技进步奖等所有以奖结尾且不是奖励级别的条目 (award_type)
+        6. 奖项级别, 如一等奖, 二等奖, 三等奖(award_level)
 
 """
         
@@ -40,16 +38,16 @@ class OpenAIProcessor:
     ...
 ]
 
-如果文本中包含表格数据，请特别注意从表格中提取完整准确的信息。
-只返回JSON数组，不要包含其他文本。
-需要注意的是, 可能会有这样的情况:在输入的文本中, 先列出所有表格对应的奖励种类等再依次给出表格, 你需要尽可能将它们匹配,给出正确的答案.
-另外, 若有无法确定的奖项类别等, 只要能确定获奖人的姓名, 你都需要将其输出, 其他部分默认输出为"待定"
-最后, 虽然文本非常长, 你仍需要提取每一个奖项的对应信息, 即使这可能会花费很长时间.
-以下是需要分析的文本：
-{text}"""
+    如果文本中包含表格数据，请特别注意从表格中提取完整准确的信息。
+    只返回JSON数组，不要包含其他文本。
+    需要注意的是, 可能会有这样的情况:在输入的文本中, 先列出所有表格对应的奖励种类等再依次给出表格, 你需要尽可能将它们匹配,给出正确的答案.
+    另外, 若有无法确定的奖项类别等, 只要能确定获奖人的姓名, 你都需要将其输出, 其他部分默认输出为"待定"
+    最后, 虽然文本非常长, 你仍需要提取每一个奖项的对应信息, 即使这可能会花费很长时间.
+    以下是需要分析的文本：
+    {text}
+"""
 
         try:
-            # 调用OpenAI API
             response = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -58,10 +56,9 @@ class OpenAIProcessor:
                 ],
                 temperature=1.0,  
                 response_format={"type": "json_object"},  
-                max_tokens=16384
+                max_tokens=16000
             )
             
-            # 提取响应内容
             result = response.choices[0].message.content
             with open("result.txt", "w") as f:
                 f.write(result)
@@ -73,11 +70,9 @@ class OpenAIProcessor:
                         if key in parsed_data and isinstance(parsed_data[key], list):
                             return parsed_data[key]
                     
-                    # 如果没有这些键但有一个列表值，返回它
                     for value in parsed_data.values():
                         if isinstance(value, list):
                             return value
-                # 如果是列表，直接返回
                 if isinstance(parsed_data, list):
                     return parsed_data
                 
