@@ -14,7 +14,7 @@ def getUrls(base_url: str) -> List[str]:
     MAX_DEPTH = 2
     
     TITLE_PATTERN = re.compile(
-        r'^([\u4e00-\u9fa5]{2,10}省|自治区|市)\s*(\d{4})年?关于科学技术奖励的通告$'
+        r'^([\u4e00-\u9fa5]{2,5}省|自治区|市)人民政府关于(\d{4})年度*科学技术奖励的通告$'
     )
     
     URL_KEYWORDS = [

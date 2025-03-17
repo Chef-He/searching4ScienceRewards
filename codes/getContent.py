@@ -9,7 +9,7 @@ headers = {
 
 def getContent(content_url: str) -> List[Dict[str, str]]:
    
-    text = ""
+    text =[]
     try:
         response = requests.get(content_url, headers=headers, timeout=15)
         response.raise_for_status()
@@ -46,10 +46,8 @@ def getContent(content_url: str) -> List[Dict[str, str]]:
                 print(f"处理docx文档时发生错误: {str(e)}")
         
         else:
-            print("不支持的文件类型")
-            return text  
-        
-        
+            raise Exception("无法处理的文件类型")
+    
     except Exception as e:
         print(f"处理失败: {str(e)}")
     

@@ -13,7 +13,6 @@ class OpenAIProcessor:
                         请以JSON格式返回，确保JSON格式正确且只包含提取的信息。
         """
 
-        # 构建用户提示
         user_prompt = f"""请从以下文本中对所有奖项进行处理。
         对于每个奖项，提取以下信息：
         1. 奖励省份 (province)
@@ -40,8 +39,8 @@ class OpenAIProcessor:
 
     如果文本中包含表格数据，请特别注意从表格中提取完整准确的信息。
     只返回JSON数组，不要包含其他文本。
-    需要注意的是, 可能会有这样的情况:在输入的文本中, 先列出所有表格对应的奖励种类等再依次给出表格, 你需要尽可能将它们匹配,给出正确的答案.
-    另外, 若有无法确定的奖项类别等, 只要能确定获奖人的姓名, 你都需要将其输出, 其他部分默认输出为"待定"
+    需要注意的是, 可能会有这样的情况:在输入的文本中, 先列出所有表格对应的奖励种类等再依次给出表格, 由于同一奖项的数目等同于该奖项下所有级别的最大编号的和，你需要尽可能匹配它们.
+    另外, 若有无法确定的奖项类别等, 只要能确定获奖人的姓名, 你都需要将其输出, 其他部分默认为空
     最后, 虽然文本非常长, 你仍需要提取每一个奖项的对应信息, 即使这可能会花费很长时间.
     以下是需要分析的文本：
     {text}
@@ -61,7 +60,7 @@ class OpenAIProcessor:
             
             result = response.choices[0].message.content
             with open("result.txt", "w") as f:
-                f.write(result)
+                 f.write(result)
             
             try:
                 parsed_data = json.loads(result)
@@ -81,7 +80,6 @@ class OpenAIProcessor:
                 
             except json.JSONDecodeError as e:
                 print(f"JSON解析错误: {str(e)}")
-                # 尝试找到JSON部分
                 try:
                     json_start = result.find('[')
                     json_end = result.rfind(']') + 1

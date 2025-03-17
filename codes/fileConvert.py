@@ -107,13 +107,11 @@ def pdf_to_docx(pdf_content: bytes) -> bytes:
     tmp_docx = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
     print(f"正在转换 {os.path.basename(tmp_pdf.name)}...")
     try:
-        # 写入临时PDF文件
         tmp_pdf.write(pdf_content)
         tmp_pdf.close()
         parse(tmp_pdf.name, tmp_docx.name)
         path = tmp_docx.name
         tmp_docx.close()
-        # 读取转换结果
         with open(path, 'rb') as f:
             return f.read()
             
@@ -142,6 +140,8 @@ def parse_docx(file_bytes: bytes) -> str:
         if table_text:
             full_text.append('\n表格内容:\n' + '\n'.join(table_text))
     result = '\n\n'.join(full_text)
-   # with open("1.txt", "w") as f:
+    #with open("result.txt", "w") as f:
     #    f.write(result)
+    if not result:
+        print("No text parsed from docx")
     return result
