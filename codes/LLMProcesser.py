@@ -13,26 +13,30 @@ class OpenAIProcessor:
                         请以JSON格式返回，确保JSON格式正确且只包含提取的信息。
         """
 
-        user_prompt = f"""请从以下文本中对所有奖项进行处理。
+        user_prompt = f"""请从以下文本中对所有奖项进行处理,缺省默认为空.
         对于每个奖项，提取以下信息：
-        1. 奖励省份 (province)
+        1. 奖励省份 (prov)
         2. 奖励年份 (year)
-        3. 项目名称 (project)
-        4. 获奖人姓名+所属单位(特别注意不是提名单位) (name_unit) (若有多个获奖人, 中间用空格隔开)
-        5. 奖项类型，如自然科学奖, 技术发明奖, 科技进步奖等所有以奖结尾且不是奖励级别的条目 (award_type)
-        6. 奖项级别, 如一等奖, 二等奖, 三等奖(award_level)
+        3. 项目名称 (proj)
+        4. 获奖人姓名(name) (若有多个获奖人, 中间用空格隔开)
+        5. 获奖人所在单位(unit) (若有多个单位, 中间用空格隔开)
+        6. 提名单位(non_unit)
+        7. 奖项类型，如自然科学奖, 技术发明奖, 科技进步奖等所有以奖结尾且不是奖励级别的条目 (type)
+        8. 奖项级别, 如一等奖, 二等奖, 三等奖(level)
 
 """
         
-        user_prompt += f"""请直接以有效的JSON数组格式返回，格式如下：
+        user_prompt += f"""请直接以有效的JSON数组格式返回,格式如下:
 [
     {{
-        "province": "奖励省份",
+        "prov": "奖励省份",
         "year": "奖励年份",
-        "project": "项目名称", 
-        "name_unit": "获奖人姓名(所属单位)",
-        "award_type": "奖项类型",
-        "award_level": :奖项级别"
+        "proj": "项目名称", 
+        "name": "获奖人姓名",
+        'unit': "获奖人所在单位",
+        'non_unit': "提名单位",
+        "type": "奖项类型",
+        "level": :奖项级别"
     }},
     ...
 ]
@@ -93,3 +97,17 @@ class OpenAIProcessor:
         except Exception as e:
             print(f"OpenAI API调用失败: {str(e)}")
             return []
+
+
+def processTextWithLLM(text, LLM):
+    if text:
+        print("开始利用LLM提取信息...")
+        try:
+            datas = LLM.extract_award_info(text)
+        except Exception as e:
+            print(f"LLM提取信息失败:{e}")
+            return 
+        return datas
+    else:
+        print("未从页面提取出文本信息.")
+        return
