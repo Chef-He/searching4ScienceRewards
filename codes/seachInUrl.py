@@ -10,7 +10,7 @@ def search(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
     }
-    TARGET_KEYWORDS = ["名单", "获奖", "附件", "目录"] 
+    TARGET_KEYWORDS = ["名单", "附件", "目录", "清单", "公告", "获奖"] 
     datas = []
     try:
         response = requests.get(url, headers=headers, timeout=10) 

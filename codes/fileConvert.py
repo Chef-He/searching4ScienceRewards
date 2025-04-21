@@ -50,12 +50,11 @@ def doc_to_docx(doc_bytes: bytes) -> bytes | None:
                     AddToRecentFiles=False
                 )
 
-                # 执行转换保存
                 doc.SaveAs(
                     FileName=tmp_docx_path,
                     FileFormat=16,
                 )
-                break  # 成功则退出重试循环
+                break  
 
             except Exception as e:
                 if attempt == max_retries:
@@ -138,10 +137,11 @@ def parse_docx(file_bytes: bytes) -> str:
                 table_text.append(' | '.join(row_text))
 
         if table_text:
-            full_text.append('\n表格内容:\n' + '\n'.join(table_text))
+            full_text.append('\n'.join(table_text))
     result = '\n\n'.join(full_text)
-    #with open("result.txt", "w") as f:
-    #    f.write(result)
+    with open("table.txt", "w", encoding = "utf-8") as f:
+        f.write(result)
+        print("text已写入table.txt")
     if not result:
         print("No text parsed from docx")
     return result
