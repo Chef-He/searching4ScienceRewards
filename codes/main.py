@@ -2,14 +2,10 @@ from seachInUrl import search
 from LLMProcesser import *
 from toExcel import toexcel
 """
-    "非href: http://kjt.shandong.gov.cn/art/2019/12/27/art_13360_8494698.html"
-    "https://www.hainan.gov.cn/hainan/szfwj/202409/c92c25ae3746408eb3a336d97e453296.shtml"
-    "处理为docx后无产出:https://kjt.shaanxi.gov.cn/gk/fdzdgknr/zcwj/qt/202103/t20210324_3366619.html"
-    广东2020"https://www.gd.gov.cn/zwgk/gongbao/2021/15/content/post_3367214.html",
-     广东2023"https://www.gd.gov.cn/zzzq/zxzc/content/post_4509595.html"
+    
 """
 BASEUrl = {
-    "https://www.shanghai.gov.cn/nw12344/20210525/79ba956915b946a5b46f00ef63957f07.html"
+    "https://www.sc.gov.cn/10462/zfwjts/2023/3/28/3240ed4c95244d088967c07ec7c914df.shtml"
 }
 EXCELPATH = "M:\\MyLib\\200-Side_works\\204-TA\\scienceRewards.xlsx" 
 CHECKPATH = "M:\\MyLib\\200-Side_works\\204-TA\\url_to_check.txt"
@@ -25,9 +21,24 @@ def main():
     print("LLM准备完成!")
     """
     for url in BASEUrl:
-        text = search(url)
-        print("读入完成, 结束!")
-        continue
+        search(url)
+        print("读入完成!")
+        """
+        full_datas = []
+        with open("table.txt", "r", encoding = "utf-8") as f:
+            heading = f.readline() + '\n'
+            lines = f.readlines()
+            chunk_items = len(lines) // 5 + 1
+            for i in range(5):
+                start_line = i * chunk_items
+                end_line = min(len(lines), (i + 1) * chunk_items)
+                text = heading + '\n'.join(lines[start_line:end_line])
+                datas = processTextWithLLM(text, LLM)
+                full_datas.extend(datas)
+        print(len(full_datas))
+        exit()
+        toexcel(full_datas, EXCELPATH)
+        """
     """
         datas = processTextWithLLM(text, LLM)
         fail = toexcel(datas, EXCELPATH)
@@ -44,6 +55,9 @@ def main_test():
     LLM = OpenAIProcessor()
     datas = processTextWithLLM(text, LLM)
     print(f"接受到{len(datas)}条数据, 请核实")
+    choice = input("执行写入?[y/n]\n")
+    if choice == 'y':
+        toexcel(datas, EXCELPATH)
 
 def main_test2():
     with open("json.txt", "r", encoding = "utf-8") as f:
@@ -56,7 +70,7 @@ def main_test2():
         toexcel(datas, EXCELPATH)
 
 if __name__ == "__main__":
-    choice = int(input("1:完整程序\n2:从table.txt推理json字符并写入excel\n3: 从json.txt中的json字段输入excel\n"))
+    choice = int(input("1:从url中获取str并存入table.txt\n2:从table.txt推理json字符并写入excel\n3: 从json.txt中的json字段输入excel\n"))
     if choice == 1:
         main()
     elif choice == 2:

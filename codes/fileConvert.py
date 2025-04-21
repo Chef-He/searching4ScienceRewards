@@ -6,6 +6,7 @@ import uuid
 import time
 import psutil
 from win32com import client as wc
+from docx.oxml import CT_P, CT_Tbl
 from docx import Document
 from pdf2docx import parse
 
@@ -120,28 +121,44 @@ def pdf_to_docx(pdf_content: bytes) -> bytes:
         os.remove(tmp_docx.name)
 
 def parse_docx(file_bytes: bytes) -> str:
+   
     doc = Document(io.BytesIO(file_bytes))
     full_text = []
-    for para in doc.paragraphs:
-        if para.text.strip():
-            full_text.append(para.text)
-    for table in doc.tables:
-        table_text = []
-        for row in table.rows:
-            row_text = []
-            for cell in row.cells:
-                cell_text = cell.text.strip().replace('\n', ' ')
-                if cell_text:
-                    row_text.append(cell_text)
-            if row_text:
-                table_text.append(' | '.join(row_text))
+    para_idx = 0
+    tbl_idx = 0
 
-        if table_text:
-            full_text.append('\n'.join(table_text))
+    for element in doc.element.body.iterchildren():
+        if isinstance(element, CT_P):
+            if para_idx < len(doc.paragraphs):
+                para = doc.paragraphs[para_idx]
+                text = para.text.strip()
+                if text:
+                    full_text.append(text)
+                para_idx += 1
+
+        elif isinstance(element, CT_Tbl):
+            if tbl_idx < len(doc.tables):
+                table = doc.tables[tbl_idx]
+                table_data = []
+                for row in table.rows:
+                    row_data = []
+                    for cell in row.cells:
+                        cell_text = cell.text.strip().replace('\n', ' ')
+                        if cell_text:
+                            row_data.append(cell_text)
+                    if row_data:
+                        table_data.append(' | '.join(row_data))
+                if table_data:
+                    full_text.append('\n'.join(table_data))
+                tbl_idx += 1
+
     result = '\n\n'.join(full_text)
-    with open("table.txt", "w", encoding = "utf-8") as f:
+    
+    with open("table.txt", "w", encoding="utf-8") as f:
         f.write(result)
         print("text已写入table.txt")
+    
     if not result:
         print("No text parsed from docx")
+    
     return result

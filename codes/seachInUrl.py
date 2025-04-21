@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from curl_cffi import requests
+from curl_cffi import requests, Curl, CurlOpt
 
 from getContent import getContent
 
@@ -10,7 +10,7 @@ def search(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
     }
-    TARGET_KEYWORDS = ["名单", "附件", "目录", "清单", "公告", "获奖"] 
+    TARGET_KEYWORDS = ["附件", "目录", "清单", "公告", "项目", "获奖", "名单"] 
     datas = []
     try:
         response = requests.get(url, headers=headers, timeout=10) 
@@ -40,3 +40,4 @@ def search(url):
     
     finally:
         return datas
+    
